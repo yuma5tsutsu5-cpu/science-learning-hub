@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "title": "物理学の基礎",
+    "author": "サンプル著者",
+    "subject": "物理学",
+    "difficulty": "基礎",
+    "purpose": "授業理解",
+    "reviewer": "K.T.",
+    "review": "物理学の基礎を復習したい学生に向いています。"
+  },
+  {
+    "id": 2,
+    "title": "演習で学ぶ解析学",
+    "author": "サンプル著者",
+    "subject": "数学",
+    "difficulty": "標準",
+    "purpose": "大学院入試",
+    "reviewer": "M.S.",
+    "review": "計算問題が多く、院試前の基礎固めに向いています。"
+  }
+]
