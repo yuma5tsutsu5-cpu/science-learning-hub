@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "title": "物理学の基礎",
+    "author": "サンプル著者",
+    "subject": "物理学",
+    "difficulty": "基礎",
+    "purpose": "授業理解",
+    "reviewer": "K.T.",
+    "review": "物理学の基礎を復習したい学生に向いています。"
+  },
+  {
+    "id": 2,
+    "title": "演習で学ぶ解析学",
+    "author": "サンプル著者",
+    "subject": "数学",
+    "difficulty": "標準",
+    "purpose": "大学院入試",
+    "reviewer": "M.S.",
+    "review": "計算問題が多く、院試前の基礎固めに向いています。"
+  },
+  {
+    "id": 3,
+    "title": "力学",
+    "author": "ランダウ・リフシッツ",
+    "subject": "物理学",
+    "purpose": "授業理解",
+    "difficulty": "発展",
+    "review": "初めて、慣性の法則、作用・反作用の法則、Newtonの運動方程式を導出した日は大学受験終わったときよりも精々しい気持ちだった。",
+    "reviewer": "Y.I"
+  }
+]
