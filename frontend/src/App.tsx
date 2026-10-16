@@ -11,6 +11,8 @@ import SubmitPage from "./pages/SubmitPage";
 
 import "./App.css";
 
+import AdminPage from "./pages/AdminPage";
+
 function App() {
   return (
     <Routes>
@@ -24,6 +26,8 @@ function App() {
         <Route path="books/:id" element={<BookDetailPage />} />
 
         <Route path="submit" element={<SubmitPage />} />
+        <Route path="admin" element={<AdminPage />} />
+
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

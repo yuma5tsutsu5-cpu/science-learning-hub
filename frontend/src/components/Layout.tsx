@@ -46,6 +46,15 @@ function Layout() {
             >
               投稿テスト
             </NavLink>
+            
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                isActive ? "navigation-link active" : "navigation-link"
+              }
+            >
+              管理
+            </NavLink>
           </nav>
         </div>
       </header>
