@@ -1,6 +1,9 @@
 import { Route, Routes } from "react-router-dom";
 
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminLoginPage from "./pages/AdminLoginPage";
+import AdminPage from "./pages/AdminPage";
 import BookDetailPage from "./pages/BookDetailPage";
 import BooksPage from "./pages/BooksPage";
 import HomePage from "./pages/HomePage";
@@ -10,8 +13,6 @@ import PromptsPage from "./pages/PromptsPage";
 import SubmitPage from "./pages/SubmitPage";
 
 import "./App.css";
-
-import AdminPage from "./pages/AdminPage";
 
 function App() {
   return (
@@ -26,7 +27,10 @@ function App() {
         <Route path="books/:id" element={<BookDetailPage />} />
 
         <Route path="submit" element={<SubmitPage />} />
-        <Route path="admin" element={<AdminPage />} />
+        <Route path="admin/login" element={<AdminLoginPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="admin" element={<AdminPage />} />
+        </Route>
 
         <Route path="*" element={<NotFoundPage />} />
       </Route>

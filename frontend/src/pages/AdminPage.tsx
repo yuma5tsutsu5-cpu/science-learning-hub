@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { useAuth } from "../components/AuthContext";
 
 import {
   getPendingSubmissions,
@@ -19,6 +22,8 @@ const emptySubmissions: PendingSubmissions = {
 };
 
 function AdminPage() {
+  const { csrfToken, logout } = useAuth();
+  const navigate = useNavigate();
   const [submissions, setSubmissions] =
     useState<PendingSubmissions>(emptySubmissions);
 
@@ -75,7 +80,7 @@ function AdminPage() {
     setMessage("");
 
     try {
-      const response = await reviewSubmission(kind, id, action);
+      const response = await reviewSubmission(kind, id, action, csrfToken);
 
       setMessage(response.message);
 
@@ -112,6 +117,15 @@ function AdminPage() {
   const totalCount =
     submissions.prompts.length + submissions.books.length;
 
+  async function handleLogout() {
+    try {
+      await logout();
+      navigate("/admin/login", { replace: true });
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "ログアウトできませんでした。");
+    }
+  }
+
   if (loading) {
     return (
       <main className="main-content">
@@ -132,10 +146,11 @@ function AdminPage() {
       </div>
 
       <div className="admin-warning">
-        <strong>ローカル開発用の管理画面です</strong>
+        <strong>認証済みの管理画面です</strong>
         <p>
-          現在はログイン認証がありません。外部公開には使用しないでください。
+          承認すると投稿が公開データへ移動します。内容を確認してから操作してください。
         </p>
+        <button className="logout-button" type="button" onClick={handleLogout}>ログアウト</button>
       </div>
 
       {error && (

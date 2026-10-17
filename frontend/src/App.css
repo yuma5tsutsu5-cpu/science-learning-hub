@@ -896,6 +896,63 @@
   color: #73551f;
 }
 
+.logout-button {
+  margin-top: 14px;
+  padding: 8px 14px;
+  border: 1px solid #8a570c;
+  border-radius: 8px;
+  background: transparent;
+  color: #8a570c;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-page {
+  display: grid;
+  min-height: 65vh;
+  place-items: center;
+}
+
+.auth-card {
+  display: grid;
+  width: min(100%, 480px);
+  gap: 12px;
+  padding: 32px;
+  border: 1px solid #dbe4df;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 12px 34px rgba(22, 55, 41, 0.08);
+}
+
+.auth-card h1,
+.auth-card p {
+  margin: 0 0 8px;
+}
+
+.auth-card label {
+  margin-top: 8px;
+  color: #31483e;
+  font-weight: 700;
+}
+
+.auth-card input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #b9c8c0;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.auth-card input:focus {
+  border-color: #176f4f;
+  outline: 2px solid rgba(23, 111, 79, 0.18);
+}
+
+.auth-submit {
+  margin-top: 12px;
+}
+
 .admin-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
