@@ -13,6 +13,7 @@ const initialFormData: BookSubmissionData = {
   difficulty: "基礎",
   review: "",
   reviewer: "",
+  cosense_url: "",
 };
 
 function BookSubmissionForm() {
@@ -172,6 +173,24 @@ function BookSubmissionForm() {
 
         <p className="character-count">
           {formData.review.length}/2000文字
+        </p>
+      </div>
+
+      <div className="form-field">
+        <label htmlFor="book-cosense-url">CosenseノートのURL（任意）</label>
+
+        <input
+          id="book-cosense-url"
+          type="url"
+          value={formData.cosense_url}
+          onChange={(event) => updateField("cosense_url", event.target.value)}
+          placeholder="https://scrapbox.io/プロジェクト名/ページ名"
+          maxLength={500}
+          pattern="https://(www\.)?scrapbox\.io/.+"
+        />
+
+        <p className="field-note">
+          本についての公開ノートがある場合だけ入力してください。
         </p>
       </div>
 

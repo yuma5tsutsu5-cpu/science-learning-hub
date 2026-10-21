@@ -117,6 +117,20 @@ function BookDetailPage() {
           </div>
           <p className="detail-reviewer">投稿者：{book.reviewer}</p>
         </section>
+
+        {book.cosense_url && (
+          <section className="detail-section">
+            <h2>関連ノート</h2>
+            <a
+              className="primary-link"
+              href={book.cosense_url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Cosenseのノートを開く ↗
+            </a>
+          </section>
+        )}
       </article>
     </main>
   );

@@ -7,6 +7,7 @@ from collections import defaultdict, deque
 from datetime import datetime, timedelta
 from functools import wraps
 from pathlib import Path
+from urllib.parse import urlparse
 
 import psycopg
 import pyotp
@@ -79,6 +80,25 @@ def validated_payload(fields):
     if missing:
         return None, (jsonify({"message": "入力されていない項目があります", "missing_fields": missing}), 400)
     return {field: payload[field].strip() for field in fields}, None
+
+
+def optional_cosense_url(payload):
+    value = payload.get("cosense_url", "")
+    if value is None:
+        return None, None
+    if not isinstance(value, str):
+        return None, (jsonify({"message": "Cosense URLの形式が正しくありません"}), 400)
+    value = value.strip()
+    if not value:
+        return None, None
+    parsed = urlparse(value)
+    if parsed.scheme != "https" or parsed.hostname not in {"scrapbox.io", "www.scrapbox.io"}:
+        return None, (jsonify({"message": "CosenseのURL（https://scrapbox.io/...）を入力してください"}), 400)
+    if not parsed.path or parsed.path == "/" or parsed.username or parsed.password or parsed.port:
+        return None, (jsonify({"message": "Cosense URLの形式が正しくありません"}), 400)
+    if len(value) > 500:
+        return None, (jsonify({"message": "Cosense URLは500文字以内で入力してください"}), 400)
+    return value, None
 
 
 def client_key():
@@ -238,12 +258,15 @@ def create_book_submission():
     data, error = validated_payload(fields)
     if error:
         return error
+    cosense_url, error = optional_cosense_url(request.get_json(silent=True) or {})
+    if error:
+        return error
     with db_connect() as connection:
         row = connection.execute(
             """insert into book_submissions
-               (title, author, subject, purpose, difficulty, review, reviewer)
-               values (%s, %s, %s, %s, %s, %s, %s) returning *""",
-            tuple(data[field] for field in fields),
+               (title, author, subject, purpose, difficulty, review, reviewer, cosense_url)
+               values (%s, %s, %s, %s, %s, %s, %s, %s) returning *""",
+            (*tuple(data[field] for field in fields), cosense_url),
         ).fetchone()
     return jsonify({"message": "書籍レビューの投稿申請を受け付けました", "submission": json_row(row)}), 201
 
@@ -264,7 +287,7 @@ def approve_submission(kind, submission_id):
     columns = (
         ("title", "subject", "category", "difficulty", "description", "prompt", "reviewer")
         if is_prompt else
-        ("title", "author", "subject", "purpose", "difficulty", "review", "reviewer")
+        ("title", "author", "subject", "purpose", "difficulty", "review", "reviewer", "cosense_url")
     )
     with db_connect() as connection:
         submission = connection.execute(
@@ -307,6 +330,37 @@ def review_submission(kind, submission_id, action):
     if kind not in {"prompts", "books"} or action not in {"approve", "reject"}:
         return jsonify({"message": "無効な操作です"}), 404
     return approve_submission(kind, submission_id) if action == "approve" else reject_submission(kind, submission_id)
+
+
+@app.get("/api/admin/published")
+@admin_required
+def get_published_items():
+    with db_connect() as connection:
+        prompts = connection.execute("select * from prompts order by id desc").fetchall()
+        books = connection.execute("select * from books order by id desc").fetchall()
+    return jsonify({"prompts": json_rows(prompts), "books": json_rows(books)})
+
+
+@app.delete("/api/admin/published/<kind>/<int:item_id>")
+@admin_required
+@csrf_required
+def delete_published_item(kind, item_id):
+    if kind not in {"prompts", "books"}:
+        return jsonify({"message": "無効なデータ種別です"}), 404
+    table = "prompts" if kind == "prompts" else "books"
+    submission_table = "prompt_submissions" if kind == "prompts" else "book_submissions"
+    label = "プロンプト" if kind == "prompts" else "書籍レビュー"
+    with db_connect() as connection:
+        connection.execute(
+            f"update {submission_table} set published_id = null where published_id = %s",
+            (item_id,),
+        )
+        deleted = connection.execute(
+            f"delete from {table} where id = %s returning id", (item_id,)
+        ).fetchone()
+    if not deleted:
+        return jsonify({"message": f"{label}が見つかりません"}), 404
+    return jsonify({"message": f"{label}を削除しました"})
 
 
 @app.get("/")

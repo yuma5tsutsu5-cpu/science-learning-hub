@@ -1,4 +1,4 @@
-import type { Book, PendingSubmissions, Prompt } from "../types";
+import type { Book, PendingSubmissions, Prompt, PublishedItems } from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
@@ -46,7 +46,7 @@ export async function submitPrompt(data: PromptSubmissionData): Promise<PromptSu
   return body;
 }
 
-export type BookSubmissionData = { title: string; author: string; subject: string; purpose: string; difficulty: string; review: string; reviewer: string };
+export type BookSubmissionData = { title: string; author: string; subject: string; purpose: string; difficulty: string; review: string; reviewer: string; cosense_url: string };
 export type BookSubmissionResponse = { message: string; submission: BookSubmissionData & { id: number; status: string; submitted_at: string } };
 
 export async function submitBook(data: BookSubmissionData): Promise<BookSubmissionResponse> {
@@ -91,5 +91,22 @@ export async function reviewSubmission(kind: SubmissionKind, id: number, action:
   const response = await apiFetch(`/admin/submissions/${kind}/${id}/${action}`, { method: "POST", headers: { "X-CSRF-Token": csrfToken } });
   const body = await responseJson(response);
   if (!response.ok) throw new Error(body.message || "申請を処理できませんでした");
+  return body;
+}
+
+export async function getPublishedItems(): Promise<PublishedItems> {
+  const response = await apiFetch("/admin/published");
+  if (response.status === 401) throw new Error("AUTH_REQUIRED");
+  if (!response.ok) throw new Error("公開済みデータを取得できませんでした");
+  return response.json();
+}
+
+export async function deletePublishedItem(kind: SubmissionKind, id: number, csrfToken: string): Promise<{ message: string }> {
+  const response = await apiFetch(`/admin/published/${kind}/${id}`, {
+    method: "DELETE",
+    headers: { "X-CSRF-Token": csrfToken },
+  });
+  const body = await responseJson(response);
+  if (!response.ok) throw new Error(body.message || "公開済みデータを削除できませんでした");
   return body;
 }

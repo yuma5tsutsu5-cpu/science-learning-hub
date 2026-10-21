@@ -218,6 +218,17 @@ function BooksPage() {
                   >
                     詳細を見る →
                   </Link>
+
+                  {book.cosense_url && (
+                    <a
+                      className="card-link"
+                      href={book.cosense_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Cosenseノートを開く ↗
+                    </a>
+                  )}
                 </article>
               ))}
             </div>

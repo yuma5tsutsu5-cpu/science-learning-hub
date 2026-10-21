@@ -7,6 +7,7 @@ export type Book = {
   purpose: string;
   reviewer: string;
   review: string;
+  cosense_url?: string | null;
 };
 
 export type Prompt = {
@@ -17,6 +18,7 @@ export type Prompt = {
   difficulty: string;
   description: string;
   prompt: string;
+  reviewer?: string;
 };
 
 
@@ -46,6 +48,7 @@ export type BookSubmission = {
   difficulty: string;
   review: string;
   reviewer: string;
+  cosense_url?: string | null;
   status: "pending" | "approved" | "rejected";
   submitted_at: string;
   reviewed_at?: string;
@@ -55,4 +58,9 @@ export type BookSubmission = {
 export type PendingSubmissions = {
   prompts: PromptSubmission[];
   books: BookSubmission[];
+};
+
+export type PublishedItems = {
+  prompts: Prompt[];
+  books: Book[];
 };

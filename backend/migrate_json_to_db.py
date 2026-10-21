@@ -44,11 +44,12 @@ def main():
         for item in books:
             connection.execute(
                 """insert into books
-                   (id, title, author, subject, purpose, difficulty, review, reviewer)
-                   values (%s, %s, %s, %s, %s, %s, %s, %s)
+                   (id, title, author, subject, purpose, difficulty, review, reviewer, cosense_url)
+                   values (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                    on conflict (id) do nothing""",
                 (item["id"], item["title"], item["author"], item["subject"],
-                 item["purpose"], item["difficulty"], item["review"], item["reviewer"]),
+                 item["purpose"], item["difficulty"], item["review"], item["reviewer"],
+                 item.get("cosense_url")),
             )
 
         for item in prompt_submissions:
@@ -68,11 +69,12 @@ def main():
             connection.execute(
                 """insert into book_submissions
                    (id, title, author, subject, purpose, difficulty, review, reviewer,
-                    status, submitted_at, reviewed_at, published_id)
-                   values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    cosense_url, status, submitted_at, reviewed_at, published_id)
+                   values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                    on conflict (id) do nothing""",
                 (item["id"], item["title"], item["author"], item["subject"],
                  item["purpose"], item["difficulty"], item["review"], item["reviewer"],
+                 item.get("cosense_url"),
                  item.get("status", "pending"), timestamp(item.get("submitted_at")),
                  timestamp(item.get("reviewed_at")), item.get("published_id")),
             )

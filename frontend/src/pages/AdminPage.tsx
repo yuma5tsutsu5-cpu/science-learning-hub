@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../components/AuthContext";
 
 import {
+  deletePublishedItem,
   getPendingSubmissions,
+  getPublishedItems,
   reviewSubmission,
   type ReviewAction,
   type SubmissionKind,
@@ -13,10 +15,16 @@ import {
 import type {
   BookSubmission,
   PendingSubmissions,
+  PublishedItems,
   PromptSubmission,
 } from "../types";
 
 const emptySubmissions: PendingSubmissions = {
+  prompts: [],
+  books: [],
+};
+
+const emptyPublishedItems: PublishedItems = {
   prompts: [],
   books: [],
 };
@@ -26,6 +34,8 @@ function AdminPage() {
   const navigate = useNavigate();
   const [submissions, setSubmissions] =
     useState<PendingSubmissions>(emptySubmissions);
+  const [publishedItems, setPublishedItems] =
+    useState<PublishedItems>(emptyPublishedItems);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -35,8 +45,12 @@ function AdminPage() {
   useEffect(() => {
     async function loadSubmissions() {
       try {
-        const data = await getPendingSubmissions();
-        setSubmissions(data);
+        const [pendingData, publishedData] = await Promise.all([
+          getPendingSubmissions(),
+          getPublishedItems(),
+        ]);
+        setSubmissions(pendingData);
+        setPublishedItems(publishedData);
       } catch (error) {
         console.error(error);
         setError("申請一覧を取得できませんでした。");
@@ -84,6 +98,10 @@ function AdminPage() {
 
       setMessage(response.message);
 
+      if (action === "approve") {
+        setPublishedItems(await getPublishedItems());
+      }
+
       setSubmissions((currentSubmissions) => {
         if (kind === "prompts") {
           return {
@@ -109,6 +127,36 @@ function AdminPage() {
       } else {
         setError("申請の処理中にエラーが発生しました。");
       }
+    } finally {
+      setProcessingKey("");
+    }
+  }
+
+  async function handleDelete(
+    kind: SubmissionKind,
+    id: number,
+    title: string,
+  ) {
+    const confirmed = window.confirm(
+      `「${title}」を完全に削除しますか？\nこの操作は取り消せません。`,
+    );
+    if (!confirmed) return;
+
+    const key = `delete-${kind}-${id}`;
+    setProcessingKey(key);
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await deletePublishedItem(kind, id, csrfToken);
+      setMessage(response.message);
+      setPublishedItems((current) =>
+        kind === "prompts"
+          ? { ...current, prompts: current.prompts.filter((item) => item.id !== id) }
+          : { ...current, books: current.books.filter((item) => item.id !== id) },
+      );
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "削除中にエラーが発生しました。");
     } finally {
       setProcessingKey("");
     }
@@ -335,6 +383,14 @@ function AdminPage() {
                       <p>{submission.review}</p>
                     </div>
 
+                    {submission.cosense_url && (
+                      <p>
+                        <a href={submission.cosense_url} target="_blank" rel="noopener noreferrer">
+                          Cosenseのノートを確認する ↗
+                        </a>
+                      </p>
+                    )}
+
                     <div className="admin-actions">
                       <button
                         className="approve-button"
@@ -372,6 +428,56 @@ function AdminPage() {
             )}
           </div>
         )}
+      </section>
+
+      <section className="admin-section">
+        <div className="admin-section-heading">
+          <div>
+            <p className="section-label">PUBLISHED CONTENT</p>
+            <h2>公開済みデータの削除</h2>
+          </div>
+          <span>{publishedItems.prompts.length + publishedItems.books.length}件</span>
+        </div>
+
+        <p className="admin-delete-notice">
+          削除したデータは元に戻せません。対象をよく確認してから操作してください。
+        </p>
+
+        <h3>公開済みプロンプト</h3>
+        <div className="admin-list compact-admin-list">
+          {publishedItems.prompts.length === 0 ? (
+            <p>公開済みプロンプトはありません。</p>
+          ) : publishedItems.prompts.map((item) => {
+            const key = `delete-prompts-${item.id}`;
+            return (
+              <article className="admin-published-row" key={item.id}>
+                <div><strong>{item.title}</strong><span>{item.subject}・{item.difficulty}</span></div>
+                <button className="delete-button" type="button" disabled={processingKey === key}
+                  onClick={() => handleDelete("prompts", item.id, item.title)}>
+                  {processingKey === key ? "削除中..." : "削除"}
+                </button>
+              </article>
+            );
+          })}
+        </div>
+
+        <h3 className="published-subheading">公開済み書籍レビュー</h3>
+        <div className="admin-list compact-admin-list">
+          {publishedItems.books.length === 0 ? (
+            <p>公開済み書籍レビューはありません。</p>
+          ) : publishedItems.books.map((item) => {
+            const key = `delete-books-${item.id}`;
+            return (
+              <article className="admin-published-row" key={item.id}>
+                <div><strong>{item.title}</strong><span>{item.author}・{item.subject}</span></div>
+                <button className="delete-button" type="button" disabled={processingKey === key}
+                  onClick={() => handleDelete("books", item.id, item.title)}>
+                  {processingKey === key ? "削除中..." : "削除"}
+                </button>
+              </article>
+            );
+          })}
+        </div>
       </section>
     </main>
   );
